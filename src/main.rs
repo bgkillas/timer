@@ -1,7 +1,9 @@
-use std::io::{stdout, Write};
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+    time::{Duration, Instant},
+};
 use libc::{c_int, signal, SIGUSR1};
-use std::time::{Duration, Instant};
-use std::thread::sleep;
 static mut SIGNAL_RECEIVED:bool = false;
 extern "C" fn handle_signal(_:c_int)
 {
@@ -14,9 +16,10 @@ fn main()
     unsafe {
         signal(SIGUSR1, handle_signal as usize);
     }
+    let d = Duration::from_nanos(16_666_666);
     loop
     {
-        sleep(Duration::from_millis(1));
+        sleep(d);
         unsafe {
             if SIGNAL_RECEIVED
             {
@@ -39,9 +42,9 @@ fn main()
             else
             {
                 print!("\x1B[1G{:02}:{:02}:{:02}.{:03}", n / (3_600_000), (n / (60_000)) % 60, (n / (1_000)) % 60, n % 1_000);
+                stdout().flush().unwrap();
+                sleep(d);
             }
         }
-        stdout().flush().unwrap();
-        sleep(Duration::from_millis(1));
     }
 }
